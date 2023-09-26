@@ -1,6 +1,6 @@
 import prisma from "@/lib/db"
 
-export default async function Home() {
+export default async function Dashboard() {
   const users = await prisma.user.findMany()
 
   console.log("users", users)
