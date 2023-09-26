@@ -2,31 +2,32 @@ const { PrismaClient } = require("@prisma/client")
 
 const users = [
   {
-    id: "123",
+    userId: "124d",
+    name: "admin Chris",
+    email: "delivered@resend.dev",
+    image: null,
+    emailVerified: null,
+  },
+  {
+    userId: "123",
     name: "John doe",
     email: "johndoe@email.com",
     image: null,
     emailVerified: null,
-    createdAt: new Date(),
-    updatedAt: new Date(),
   },
   {
-    id: "456",
+    userId: "456",
     name: "Jane doe",
     email: "janedoe@email.com",
     image: null,
     emailVerified: null,
-    createdAt: new Date(),
-    updatedAt: new Date(),
   },
   {
-    id: "789",
+    userId: "789",
     name: "John Smith",
     email: "jonesmith@email.com",
     image: null,
     emailVerified: null,
-    createdAt: new Date(),
-    updatedAt: new Date(),
   },
 ]
 
