@@ -11,7 +11,7 @@ import { VerifyEmail } from "@/components/verify-email"
 
 const prisma = new PrismaClient()
 
-export const authOptions: NextAuthOptions = {
+const authOptions = {
   adapter: PrismaAdapter(prisma),
   session: {
     strategy: "jwt",
@@ -61,11 +61,15 @@ export const authOptions: NextAuthOptions = {
       return session
     },
     async jwt({ token, user }) {
-      const dbUser = await prisma.user.findFirst({
-        where: {
-          email: token.email,
-        },
-      })
+      let dbUser = null
+
+      if (token?.email) {
+        dbUser = await prisma.user.findFirst({
+          where: {
+            email: token.email,
+          },
+        })
+      }
 
       if (!dbUser) {
         if (user) {
@@ -82,20 +86,24 @@ export const authOptions: NextAuthOptions = {
       }
     },
     async signIn({ user }) {
-      const userExists = await prisma.user.findFirst({
-        where: {
-          email: user.email, //the user object has an email property, which contains the email the user entered.
-        },
-      })
-      if (userExists) {
+      let userExist = null
+
+      if (user?.email) {
+        userExist = await prisma.user.findFirst({
+          where: {
+            email: user.email, //the user object has an email property, which contains the email the user entered.
+          },
+        })
+      }
+
+      if (userExist) {
         return true //if the email exists in the User collection, email them a magic login link
       } else {
         return "/register"
       }
     },
   },
-}
+} satisfies NextAuthOptions
 
-export const handler = NextAuth(authOptions)
-
+const handler = NextAuth(authOptions)
 export { handler as GET, handler as POST }
