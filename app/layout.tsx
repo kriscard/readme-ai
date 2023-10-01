@@ -5,6 +5,7 @@ import { Inter as FontSans } from "next/font/google"
 import localFont from "next/font/local"
 
 import { cn } from "@/lib/utils"
+import { ThemeProvider } from "@/components/theme-provider"
 
 const fontSans = FontSans({
   subsets: ["latin"],
@@ -35,7 +36,14 @@ export default async function RootLayout({
           fontHeading.variable,
         )}
       >
-        {children}
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          {children}
+        </ThemeProvider>
       </body>
     </html>
   )
