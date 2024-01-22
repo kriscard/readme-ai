@@ -5,7 +5,7 @@
   "tsx": true,
   "tailwind": {
     "config": "tailwind.config.ts",
-    "css": "app/styles/global.css",
+    "css": "styles/global.css",
     "baseColor": "gray",
     "cssVariables": false
   },
@@ -14,3 +14,4 @@
     "utils": "@/lib/utils"
   }
 }
+
