@@ -2,11 +2,12 @@ import { Metadata } from "next"
 import Link from "next/link"
 
 import { Card } from "@/components/ui/card"
-import { UserAuthForm } from "@/components/user-auth-form"
+// TODO: Replace with UserLoginForm
+import { UserRegisterForm } from "@/components/user-register-form"
 
 export const metadata: Metadata = {
-  title: "Authentication",
-  description: "Authentication forms built using the components.",
+  title: "Readme-ai - Log in",
+  description: "User log in page",
 }
 
 export default function UserLoginPage() {
@@ -24,7 +25,7 @@ export default function UserLoginPage() {
                   Enter your email below to create your account
                 </p>
               </div>
-              <UserAuthForm />
+              <UserRegisterForm />
               <p className="text-muted-foreground px-8 text-center text-sm">
                 By clicking continue, you agree to our{" "}
                 <Link
