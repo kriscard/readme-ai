@@ -1,9 +1,9 @@
-import prisma from "@/lib/db"
+import { auth } from "@/auth"
 
 export default async function Dashboard() {
-  const users = await prisma.user.findMany()
+  const session = await auth()
 
-  console.log("users", users)
+  console.log("session", session)
 
   return (
     <div className="flex flex-col items-center justify-center">
@@ -11,11 +11,7 @@ export default async function Dashboard() {
       <p className="font-sans text-lg md:text-sm">
         Create your Readme file in seconds
       </p>
-      <ul>
-        {users.map((user) => (
-          <li key={user.id}>{user.name}</li>
-        ))}
-      </ul>
+      <pre>{JSON.stringify(session)}</pre>
     </div>
   )
 }

@@ -1,97 +1,72 @@
+import authConfig from "@/auth.config"
+import { getUserById } from "@/data/user"
 import { PrismaAdapter } from "@auth/prisma-adapter"
-import { PrismaClient } from "@prisma/client"
-import NextAuth, { NextAuthConfig } from "next-auth"
-import EmailProvider from "next-auth/providers/email"
-import GithubProvider from "next-auth/providers/github"
+import NextAuth from "next-auth"
 
-import { resend } from "@/lib/resend"
-import { VerifyEmail } from "@/components/verify-email"
+import { db } from "@/lib/db"
 
-const prisma = new PrismaClient()
+import { getAccountByUserId } from "./data/account"
 
-const authConfig = {
-  adapter: PrismaAdapter(prisma),
-  session: {
-    strategy: "jwt",
-    maxAge: 30 * 24 * 60 * 60, // 30 days
-  },
+export const {
+  handlers: { GET, POST },
+  auth,
+  signIn,
+  signOut,
+} = NextAuth({
   pages: {
     signIn: "/login",
   },
-  providers: [
-    GithubProvider({
-      clientId: process.env.GITHUB_ID as string,
-      clientSecret: process.env.GITHUB_SECRET as string,
-    }),
-    EmailProvider({
-      server: {
-        host: process.env.EMAIL_SERVER_HOST,
-        port: process.env.EMAIL_SERVER_PORT,
-        auth: {
-          user: process.env.EMAIL_SERVER_USER,
-          pass: process.env.EMAIL_SERVER_PASSWORD,
-        },
-      },
-      from: process.env.EMAIL_FROM,
-      sendVerificationRequest: ({ identifier: email, url }) => {
-        resend.emails.send({
-          from: process.env.EMAIL_FROM as string,
-          to: email,
-          subject: "Sign in to your account",
-          react: VerifyEmail({ url }),
-        })
-      },
-    }),
-  ],
+  events: {
+    async linkAccount({ user }) {
+      await db.user.update({
+        where: { id: user.id },
+        data: { emailVerified: new Date() },
+      })
+    },
+  },
   callbacks: {
-    async session({ session, token }) {
+    async signIn({ user, account }) {
+      // Allow OAuth without email verification
+      if (account?.provider !== "credentials") return true
+
+      const existingUser = await getUserById(user.id!)
+
+      // Prevent sign in without email verification
+      if (!existingUser?.emailVerified) return false
+
+      return true
+    },
+    //@ts-ignore
+    async session({ token, session }) {
+      if (token.sub && session.user) {
+        session.user.id = token.sub
+      }
+
       if (session.user) {
-        // ADD user Id to session
         session.user.name = token.name
-        session.user.image = token.picture
         session.user.email = token.email
+        session.user.isOAuth = token.isOAuth as boolean
       }
 
       return session
     },
-    async jwt({ token, user }) {
-      let dbUser = null
+    async jwt({ token }) {
+      if (!token.sub) return token
 
-      if (token?.email) {
-        dbUser = await prisma.user.findFirst({
-          where: {
-            email: token.email,
-          },
-        })
-      }
+      const existingUser = await getUserById(token.sub)
 
-      if (!dbUser) {
-        if (user) {
-          token.id = user?.id
-        }
-        return token
-      }
+      if (!existingUser) return token
 
-      return {
-        id: dbUser.id,
-        name: dbUser.name,
-        email: dbUser.email,
-        picture: dbUser.image,
-      }
-    },
-    async signIn({ user }) {
-      let userExist = null
+      const existingAccount = await getAccountByUserId(existingUser.id)
 
-      if (user?.email) {
-        userExist = await prisma.user.findFirst({
-          where: {
-            email: user.email, //the user object has an email property, which contains the email the user entered.
-          },
-        })
-      }
-      return userExist ? true : false
+      token.isOAuth = !!existingAccount
+      token.name = existingUser.name
+      token.email = existingUser.email
+
+      return token
     },
   },
-} satisfies NextAuthConfig
-
-export const { handlers, auth, signIn, signOut } = NextAuth(authConfig)
+  adapter: PrismaAdapter(db),
+  session: { strategy: "jwt" },
+  ...authConfig,
+})

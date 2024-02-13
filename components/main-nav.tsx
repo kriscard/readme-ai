@@ -9,7 +9,7 @@ export default function MainNav() {
       <nav className="flex w-full items-center justify-between p-10">
         <div className="flex items-center gap-5">
           <button className="flex items-center gap-2 text-xl font-bold text-black">
-            <RocketIcon className="h-[30px] w-[30px]" />
+            <RocketIcon className="size-[30px]" />
             Readme.ai
           </button>
           <Link className="hover:text-gray-700" href="#">
