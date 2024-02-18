@@ -1,7 +1,7 @@
 "use server"
 
 import { getUserByEmail } from "@/data/user"
-import bcrypt from "bcryptjs"
+import bcrypt from "bcrypt"
 import * as z from "zod"
 
 import { db } from "@/lib/db"

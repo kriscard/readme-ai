@@ -40,8 +40,8 @@ export function RegisterForm() {
           toast({
             title: "Something went wrong!",
             description: (
-              <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
-                <code className="text-white">
+              <pre className="mt-2 w-[340px] rounded-md p-4">
+                <code className="text-black">
                   {JSON.stringify(data.error, null, 2)}
                 </code>
               </pre>
@@ -53,8 +53,8 @@ export function RegisterForm() {
           toast({
             title: "Success! User successfully created",
             description: (
-              <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
-                <code className="text-white">
+              <pre className="mt-2 w-[340px] rounded-md p-4">
+                <code className="text-black">
                   {JSON.stringify(data.success, null, 2)}
                 </code>
               </pre>

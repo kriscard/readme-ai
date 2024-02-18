@@ -1,20 +1,28 @@
-"use client"
-
-import { useEffect } from "react"
-import { useRouter, useSearchParams } from "next/navigation"
+import { redirect } from "next/navigation"
 import { validateToken } from "@/actions/validate-token"
 
-export default function VerificationTokenPage() {
-  const searchParams = useSearchParams()
-  const router = useRouter()
+import { Card } from "@/components/ui/card"
 
-  const token = searchParams.get("token")
+export default async function VerificationTokenPage({
+  searchParams,
+}: {
+  searchParams: { token: string }
+}) {
+  const result = await validateToken(searchParams.token)
 
-  useEffect(() => {
-    validateToken(token).then((result) => {
-      result.error ? router.push("/login") : router.push("/dashboard")
-    })
-  }, [token])
+  if (result.success) {
+    redirect("/dashboard")
+  }
 
-  return <></>
+  return (
+    <Card className="mx-auto h-fit w-full max-w-md overflow-hidden border-y border-gray-200 sm:rounded-2xl sm:border sm:shadow-xl">
+      {result.error && (
+        <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
+          <code className="text-white">
+            {JSON.stringify(result.error, null, 2)}
+          </code>
+        </pre>
+      )}
+    </Card>
+  )
 }

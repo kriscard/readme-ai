@@ -11,7 +11,7 @@ export async function validateToken(token: string | null) {
   }
 
   const existingToken = await getVerificationTokenByToken(token)
-  console.log({ existingToken })
+  console.log("existingToken", existingToken)
 
   if (!existingToken) {
     return { error: "Token does not exist!" }
@@ -35,10 +35,6 @@ export async function validateToken(token: string | null) {
       emailVerified: new Date(),
       email: existingToken.email,
     },
-  })
-
-  await db.verificationToken.delete({
-    where: { id: existingToken.id },
   })
 
   return { success: "Email verified!" }

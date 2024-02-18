@@ -1,7 +1,5 @@
-"use client"
-
 import Link from "next/link"
-import { logout } from "@/actions/logout"
+import { signOut } from "@/auth"
 import { RocketIcon } from "@radix-ui/react-icons"
 
 import { Button } from "@/components/ui/button"
@@ -23,16 +21,19 @@ export default function AuthNav() {
           </Link>
         </div>
         <div className="flex items-center gap-3">
-          <Button
-            className="rounded-full bg-black px-5 py-2 text-sm text-white"
-            variant="outline"
-            asChild
-            onClick={() => {
-              logout()
+          <form
+            action={async () => {
+              "use server"
+              await signOut()
             }}
           >
-            <p>Log out</p>
-          </Button>
+            <Button
+              className="rounded-full bg-black px-5 py-2 text-sm text-white"
+              variant="outline"
+            >
+              <p>Log out</p>
+            </Button>
+          </form>
         </div>
       </nav>
     </>

@@ -30,29 +30,27 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode
 }) {
-  const session = await auth()
+  // const session = await auth()
 
   return (
-    <SessionProvider session={session}>
-      <html lang="en">
-        <body
-          className={cn(
-            "min-h-screen font-sans antialiased",
-            fontSans.variable,
-            fontHeading.variable,
-          )}
+    <html lang="en">
+      <body
+        className={cn(
+          "min-h-screen font-sans antialiased",
+          fontSans.variable,
+          fontHeading.variable,
+        )}
+      >
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="#F1F6FC"
+          enableSystem
+          disableTransitionOnChange
         >
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="#F1F6FC"
-            enableSystem
-            disableTransitionOnChange
-          >
-            {children}
-            <Toaster />
-          </ThemeProvider>
-        </body>
-      </html>
-    </SessionProvider>
+          {children}
+          <Toaster />
+        </ThemeProvider>
+      </body>
+    </html>
   )
 }
