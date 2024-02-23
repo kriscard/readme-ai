@@ -1,17 +1,9 @@
 import { PrismaClient } from "@prisma/client"
 
-const cachedPrisma = () => {
-  return new PrismaClient()
-}
+const globalForPrisma = global as unknown as { prisma: PrismaClient }
 
-type CachedPrismaClient = ReturnType<typeof cachedPrisma>
+export const db = globalForPrisma.prisma || new PrismaClient()
 
-const globalForPrisma = globalThis as unknown as {
-  prisma: CachedPrismaClient | undefined
-}
+if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = db
 
-const prisma = globalForPrisma.prisma ?? cachedPrisma()
-
-export default prisma
-
-if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma
+export default db

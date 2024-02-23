@@ -1,59 +1,49 @@
-import { NextResponse } from "next/server"
-import { getToken } from "next-auth/jwt"
-import { withAuth } from "next-auth/middleware"
+import authConfig from "@/auth.config"
+import {
+  apiAuthPrefix,
+  authRoutes,
+  DEFAULT_LOGIN_REDIRECT,
+  publicRoutes,
+} from "@/routes"
+import NextAuth from "next-auth"
 
-/**
- * middleware function doesn't work with nexjs 13 yet
- * We need to wait for this issue to be resolved
- * before we can use the full potential of next-auth middleware
- * I choose to use the Provider pattern for now
- **/
+const { auth } = NextAuth(authConfig)
 
-export default withAuth(
-  async function middleware(req) {
-    const token = await getToken({ req })
-    const isAuth = !!token
-    const isAuthPage =
-      req.nextUrl.pathname.startsWith("/login") ||
-      req.nextUrl.pathname.startsWith("/register")
+export default auth((req) => {
+  const { nextUrl } = req
+  const isLoggedIn = !!req.auth
 
-    if (isAuthPage) {
-      if (isAuth) {
-        return NextResponse.redirect(new URL("/dashboard", req.url))
-      }
+  const isApiAuthRoute = nextUrl.pathname.startsWith(apiAuthPrefix)
+  const isPublicRoute = publicRoutes.includes(nextUrl.pathname)
+  const isAuthRoute = authRoutes.includes(nextUrl.pathname)
 
-      return null
+  if (isApiAuthRoute) {
+    return
+  }
+
+  if (isAuthRoute) {
+    if (isLoggedIn) {
+      return Response.redirect(new URL(DEFAULT_LOGIN_REDIRECT, nextUrl))
+    }
+    return
+  }
+
+  if (!isLoggedIn && !isPublicRoute) {
+    let callbackUrl = nextUrl.pathname
+    if (nextUrl.search) {
+      callbackUrl += nextUrl.search
     }
 
-    if (!isAuth) {
-      let from = req.nextUrl.pathname
-      console.log("from", from)
+    const encodedCallbackUrl = encodeURIComponent(callbackUrl)
 
-      if (req.nextUrl.search) {
-        from += req.nextUrl.search
-      }
+    return Response.redirect(
+      new URL(`/login?callbackUrl=${encodedCallbackUrl}`, nextUrl),
+    )
+  }
 
-      return NextResponse.redirect(
-        new URL(`/login?from=${encodeURIComponent(from)}`, req.url),
-      )
-    }
-  },
-  {
-    callbacks: {
-      authorized: ({ req, token }) => {
-        if (req.nextUrl.pathname)
-          if (
-            req.nextUrl.pathname === "/" ||
-            (req.nextUrl.pathname.startsWith("/dashboard") && token === null)
-          ) {
-            return false
-          }
-        return true
-      },
-    },
-  },
-)
+  return
+})
 
 export const config = {
-  matcher: ["/dashboard/:path*"],
+  matcher: ["/((?!.+\\.[\\w]+$|_next).*)", "/", "/(api|trpc)(.*)"],
 }
