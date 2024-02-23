@@ -1,12 +1,11 @@
-import { authConfig } from "@/auth.config"
-import { getUserByEmail } from "@/data/user"
+import authConfig from "@/auth.config"
+import { getUserById } from "@/data/user"
 import { PrismaAdapter } from "@auth/prisma-adapter"
-import bcrypt from "bcrypt"
 import NextAuth from "next-auth"
-import Credentials from "next-auth/providers/credentials"
-import { z } from "zod"
 
 import { db } from "@/lib/db"
+
+import { getAccountByUserId } from "./data/account"
 
 export const {
   handlers: { GET, POST },
@@ -14,32 +13,59 @@ export const {
   signIn,
   signOut,
 } = NextAuth({
-  ...authConfig,
+  pages: {
+    signIn: "/login",
+  },
+  events: {
+    async linkAccount({ user }) {
+      await db.user.update({
+        where: { id: user.id },
+        data: { emailVerified: new Date() },
+      })
+    },
+  },
+  callbacks: {
+    async signIn({ user, account }) {
+      // Allow OAuth without email verification
+      if (account?.provider !== "credentials") return true
+
+      const existingUser = await getUserById(user.id as string)
+
+      // Prevent sign in without email verification
+      if (!existingUser?.emailVerified) return false
+
+      return true
+    },
+    async session({ token, session }) {
+      if (token.sub && session.user) {
+        session.user.id = token.sub
+      }
+
+      if (session.user) {
+        session.user.name = token.name
+        session.user.email = token.email as string
+        session.user.isOAuth = token.isOAuth as boolean
+      }
+
+      return session
+    },
+    async jwt({ token }) {
+      if (!token.sub) return token
+
+      const existingUser = await getUserById(token.sub)
+
+      if (!existingUser) return token
+
+      const existingAccount = await getAccountByUserId(existingUser.id)
+
+      token.isOAuth = !!existingAccount
+      token.name = existingUser.name
+      token.email = existingUser.email
+
+      return token
+    },
+  },
   adapter: PrismaAdapter(db),
-  providers: [
-    Credentials({
-      async authorize(credentials) {
-        const parsedCredentials = z
-          .object({ email: z.string().email(), password: z.string().min(6) })
-          .safeParse(credentials)
-
-        if (parsedCredentials.success) {
-          console.log("HIIIII")
-          const { email, password } = parsedCredentials.data
-          console.log({ password })
-          const user = await getUserByEmail(email)
-          console.log({ user })
-          if (!user) return null
-          const passwordsMatch = await bcrypt.compare(
-            password,
-            user.password as string,
-          )
-          console.log({ passwordsMatch })
-          if (passwordsMatch) return user
-        }
-
-        return null
-      },
-    }),
-  ],
+  session: { strategy: "jwt" },
+  ...authConfig,
 })

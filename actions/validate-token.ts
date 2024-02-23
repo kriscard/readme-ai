@@ -5,13 +5,8 @@ import { getVerificationTokenByToken } from "@/data/verification-token"
 
 import { db } from "@/lib/db"
 
-export async function validateToken(token: string | null) {
-  if (!token) {
-    return { error: "Token is required!" }
-  }
-
+export const validateToken = async (token: string) => {
   const existingToken = await getVerificationTokenByToken(token)
-  console.log("existingToken", existingToken)
 
   if (!existingToken) {
     return { error: "Token does not exist!" }
@@ -35,6 +30,10 @@ export async function validateToken(token: string | null) {
       emailVerified: new Date(),
       email: existingToken.email,
     },
+  })
+
+  await db.verificationToken.delete({
+    where: { id: existingToken.id },
   })
 
   return { success: "Email verified!" }

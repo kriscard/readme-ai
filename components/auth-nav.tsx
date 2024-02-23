@@ -20,21 +20,19 @@ export default function AuthNav() {
             Github
           </Link>
         </div>
-        <div className="flex items-center gap-3">
-          <form
-            action={async () => {
-              "use server"
-              await signOut()
-            }}
+        <form
+          action={async () => {
+            "use server"
+            await signOut()
+          }}
+        >
+          <Button
+            className="rounded-full bg-black px-5 py-2 text-sm text-white"
+            variant="outline"
           >
-            <Button
-              className="rounded-full bg-black px-5 py-2 text-sm text-white"
-              variant="outline"
-            >
-              <p>Log out</p>
-            </Button>
-          </form>
-        </div>
+            <p>Log out</p>
+          </Button>
+        </form>
       </nav>
     </>
   )
