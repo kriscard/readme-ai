@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { signOut } from "@/auth"
+// import { signOut } from "@/auth"
 import { RocketIcon } from "@radix-ui/react-icons"
 
 import { Button } from "@/components/ui/button"
@@ -21,10 +21,10 @@ export default function AuthNav() {
           </Link>
         </div>
         <form
-          action={async () => {
-            "use server"
-            await signOut()
-          }}
+        // action={async () => {
+        //   "use server"
+        //   await signOut()
+        // }}
         >
           <Button
             className="rounded-full bg-black px-5 py-2 text-sm text-white"

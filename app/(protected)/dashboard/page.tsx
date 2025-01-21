@@ -1,9 +1,9 @@
-import { auth } from "@/auth"
+// import { auth } from "@/auth"
 
 export default async function Dashboard() {
-  const session = await auth()
+  // const session = await auth()
 
-  console.log("session", session)
+  // console.log("session", session)
 
   return (
     <div className="flex flex-col items-center justify-center">
@@ -11,7 +11,8 @@ export default async function Dashboard() {
       <p className="font-sans text-lg md:text-sm">
         Create your Readme file in seconds
       </p>
-      <pre>{JSON.stringify(session)}</pre>
+      {/* <pre>{JSON.stringify(session)}</pre> */}
+      <pre>{JSON.stringify({})}</pre>
     </div>
   )
 }
